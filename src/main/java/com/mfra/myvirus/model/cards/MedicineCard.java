@@ -13,4 +13,9 @@ public abstract class MedicineCard implements SingleOrganCardType<MultiMedicineC
     public MultiMedicineCard getMultiOrganCardType(){
         return multiMedicineCard;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Medicine: %s", this.getOrgan());
+    }
 }

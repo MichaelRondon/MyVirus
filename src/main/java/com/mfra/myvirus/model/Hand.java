@@ -21,8 +21,10 @@ public class Hand {
     private List<Card> virus = new ArrayList<>();
     private List<Card> organs = new ArrayList<>();
     private List<Card> treatments = new ArrayList<>();
+    private List<Card> allCards = new ArrayList<>();
 
     public void addCard(Card card) {
+        allCards.add(card);
         if (card instanceof MedicineCard || card instanceof MultiMedicineCard) {
             medicines.add(card);
             return;
@@ -47,6 +49,7 @@ public class Hand {
         virus.removeAll(cards);
         organs.removeAll(cards);
         treatments.removeAll(cards);
+        allCards.removeAll(cards);
     }
 
     public void discardAll() {
@@ -54,22 +57,7 @@ public class Hand {
         virus.clear();
         organs.clear();
         treatments.clear();
-    }
-
-    public List<Card> getMedicines() {
-        return medicines;
-    }
-
-    public List<Card> getVirus() {
-        return virus;
-    }
-
-    public List<Card> getOrgans() {
-        return organs;
-    }
-
-    public List<Card> getTreatments() {
-        return treatments;
+        allCards.clear();
     }
 
     public class UnmodifiableHandCard {
@@ -92,6 +80,15 @@ public class Hand {
 
         public Collection<Card> getTreatments() {
             return Collections.unmodifiableCollection(treatments);
+        }
+        
+        public int getTotalCards(){
+            return medicines.size() + virus.size() + organs.size() + treatments.size();
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Hand %s", allCards);
         }
     }
 }

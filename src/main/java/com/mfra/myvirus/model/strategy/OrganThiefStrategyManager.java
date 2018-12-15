@@ -21,10 +21,10 @@ public class OrganThiefStrategyManager implements StrategyManager<OrganThief> {
                     = new TrasplantStrategyManager();
 
     @Override
-    public Optional<OrganThief> evaluate(OrganThief card, Rank currentRank,
-                    Stream<Rank> rivalsRanks) {
+    public OrganThief evaluate(OrganThief card, Rank currentRank,
+                    TreeSet<Rank> rivalsRanks) {
 
-        TreeSet<Rank> healthAndImmuneEnemies = new TreeSet(rivalsRanks.filter(rank -> {
+        TreeSet<Rank> healthAndImmuneEnemies = new TreeSet(rivalsRanks.stream().filter(rank -> {
             return rank.getOrgansByStates(State.HEALTH, State.VACCINATED, State.IMMUNE)
                             .isEmpty();
         }).collect(Collectors.toList()));
@@ -34,10 +34,10 @@ public class OrganThiefStrategyManager implements StrategyManager<OrganThief> {
             Optional<RankEvaluatorResult> targetRanks = RankEvaluator.getInstance()
                             .evalRanks(currentRank, healthAndImmuneEnemies);
             if (targetRanks.isPresent()) {
-                return Optional.of(fillAndPlay(card, targetRanks.get()));
+                return fillAndPlay(card, targetRanks.get());
             }
         }
-        return Optional.empty();
+        return null;
     }
 
     private OrganThief fillAndPlay(OrganThief organThief, RankEvaluatorResult evalRankResult) {

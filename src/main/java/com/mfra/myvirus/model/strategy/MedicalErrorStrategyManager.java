@@ -14,17 +14,17 @@ import java.util.stream.Stream;
 public class MedicalErrorStrategyManager implements StrategyManager<MedicalError> {
 
     @Override
-    public Optional<MedicalError> evaluate(MedicalError card, Rank currentRank,
-                    Stream<Rank> rivalsRanks) {
-        TreeSet<Rank> rivals = new TreeSet(rivalsRanks.collect(Collectors.toList()));
+    public MedicalError evaluate(MedicalError card, Rank currentRank,
+                    TreeSet<Rank> rivalsRanks) {
+        TreeSet<Rank> rivals = new TreeSet(rivalsRanks.stream().collect(Collectors.toList()));
         Optional<RankEvaluatorResult> evalRanks = RankEvaluator.getInstance()
                         .evalRanks(currentRank, rivals);
         if(evalRanks.isPresent()){
             RankEvaluatorResult rankEvaluatorResult = evalRanks.get();
             card.playCard(rankEvaluatorResult);
-            return Optional.of(card);
+            return card;
         }
         
-        return Optional.empty();
+        return null;
     }
 }

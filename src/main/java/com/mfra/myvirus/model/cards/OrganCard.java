@@ -13,4 +13,9 @@ public abstract class OrganCard implements SingleOrganCardType<MultiOrganCard>{
     public MultiOrganCard getMultiOrganCardType(){
         return multiOrganCard;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Organ: %s", this.getOrgan());
+    }
 }

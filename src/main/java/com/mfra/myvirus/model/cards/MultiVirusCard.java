@@ -13,4 +13,9 @@ public class MultiVirusCard implements OrganCardType{
     public void playCard(Player targetPlayer, Organ organ){
         targetPlayer.sickOrgan(organ);
     }
+
+    @Override
+    public String toString() {
+        return "MultiVirus";
+    }
 }

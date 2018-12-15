@@ -1,8 +1,7 @@
 package com.mfra.myvirus.model.strategy;
 
 import com.mfra.myvirus.model.cards.Card;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.TreeSet;
 
 /**
  *
@@ -10,6 +9,6 @@ import java.util.stream.Stream;
  */     
 public interface StrategyManager <C extends Card>{
     
-    Optional<C>  evaluate(C card, Rank currentRank, Stream<Rank> rivalsRanks);
+    C  evaluate(C card, Rank currentRank, TreeSet<Rank> rivalsRanks);
 
 }

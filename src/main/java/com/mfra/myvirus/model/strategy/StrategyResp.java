@@ -2,27 +2,19 @@ package com.mfra.myvirus.model.strategy;
 
 import com.mfra.myvirus.model.Organ;
 import com.mfra.myvirus.model.cards.Card;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  */
-public class StrategyResp {
+public class StrategyResp implements Comparable<StrategyResp>{
 
     private final Card card;
     private Rank target;
     private Organ targetOrgan;
-    private List<Rank> targets =  new ArrayList<>();
 
     public StrategyResp(Card card, Rank target) {
         this.card = card;
         this.target = target;
-    }
-    
-    public StrategyResp(Card card, List<Rank> targets) {
-        this.card = card;
-        this.targets = targets;
     }
 
     public Card getCard() {
@@ -41,7 +33,8 @@ public class StrategyResp {
         return targetOrgan;
     }
 
-    public List<Rank> getTargets() {
-        return targets;
+    @Override
+    public int compareTo(StrategyResp t) {
+        return this.target.compareTo(t.target);
     }
 }

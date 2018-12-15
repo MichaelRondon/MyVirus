@@ -3,6 +3,7 @@ package com.mfra.myvirus.model;
 import com.mfra.myvirus.model.Hand.UnmodifiableHandCard;
 import com.mfra.myvirus.model.strategy.Strategy;
 import com.mfra.myvirus.model.cards.Card;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,13 +18,16 @@ public class Player{
     private final Map<Organ, State> bodyMap = new HashMap<>();
     private final Strategy strategy;
     private final String name;
+    private final List<Player> allPlayers;
+    private List<Player> rivals;
 
     
-    public Player(String name, Strategy strategy) {
+    public Player(String name, Strategy strategy, List<Player> allPlayers) {
         this.name = name;
         this.strategy = strategy;
+        this.allPlayers = allPlayers;
     }
-
+    
     public void addCard(Card card) {
         hand.addCard(card);
     }
@@ -59,7 +63,14 @@ public class Player{
         return name;
     }
 
-    public void play(List<Player> rivals) {
+    public void play() {
+        if(allPlayers == null || allPlayers.isEmpty()){
+            throw new IllegalStateException("You must set all the players before play");
+        }
+        if (rivals == null || rivals.isEmpty()) {
+            rivals = (ArrayList) ((ArrayList) allPlayers).clone();
+            rivals.remove(this);
+        }
         discard(strategy.play(this, rivals));
     }
 
@@ -88,7 +99,7 @@ public class Player{
                     throw new IllegalStateException("The organ is already set");
             }
         }
-        bodyMap.put(organ, State.SICK);
+        bodyMap.put(organ, State.HEALTH);
     }
 
     public void spreadOrgan(Organ organ) {

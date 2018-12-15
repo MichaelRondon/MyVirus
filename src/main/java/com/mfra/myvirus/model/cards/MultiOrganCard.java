@@ -13,4 +13,9 @@ public class MultiOrganCard implements OrganCardType{
     public void playCard(Player currentPlayer, Organ organ){
         currentPlayer.putOrgan(organ);
     }
+
+    @Override
+    public String toString() {
+        return "MultiOrgan";
+    }
 }

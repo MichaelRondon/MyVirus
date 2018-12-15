@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *
@@ -19,10 +18,10 @@ import java.util.stream.Stream;
 public class TrasplantStrategyManager implements StrategyManager<Transplant> {
 
     @Override
-    public Optional<Transplant> evaluate(Transplant card, Rank currentRank,
-                    Stream<Rank> rivalsRanks) {
+    public Transplant evaluate(Transplant card, Rank currentRank,
+                    TreeSet<Rank> rivalsRanks) {
 
-        TreeSet<Rank> player2Ranks = new TreeSet(rivalsRanks.filter(rank -> {
+        TreeSet<Rank> player2Ranks = new TreeSet(rivalsRanks.stream().filter(rank -> {
             return rank.getOrgansByStates(State.HEALTH, State.IMMUNE, State.VACCINATED).isEmpty();
         }).collect(Collectors.toList()));
 
@@ -31,19 +30,19 @@ public class TrasplantStrategyManager implements StrategyManager<Transplant> {
             Optional<RankEvaluatorResult> evalRanks = RankEvaluator.getInstance()
                             .evalRanks(currentRank, player2Ranks);
             if (evalRanks.isPresent()) {
-                return Optional.of(fillAndPlay(card, evalRanks.get()));
+                return fillAndPlay(card, evalRanks.get());
             }
         }
 
-        TreeSet<Rank> withInfectedOrgans = new TreeSet(rivalsRanks.filter(rank -> {
+        TreeSet<Rank> withInfectedOrgans = new TreeSet(rivalsRanks.stream().filter(rank -> {
             return !rank.getOrgansByStates(State.SICK).isEmpty();
         }).collect(Collectors.toList()));
         Optional<RankEvaluatorResult> evalRanks = RankEvaluator.getInstance()
                         .evalRanks(withInfectedOrgans, player2Ranks);
         if (evalRanks.isPresent()) {
-            return Optional.of(fillAndPlay(card, evalRanks.get()));
+            return fillAndPlay(card, evalRanks.get());
         }
-        return Optional.empty();
+        return null;
     }
 
     private Transplant fillAndPlay(Transplant transplant, RankEvaluatorResult evalRankResult) {

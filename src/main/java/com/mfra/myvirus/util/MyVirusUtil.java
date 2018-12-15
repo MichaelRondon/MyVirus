@@ -16,6 +16,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import com.mfra.myvirus.model.SingleOrganCardType;
+import java.util.TreeSet;
 
 /**
  *
@@ -52,32 +53,31 @@ public class MyVirusUtil {
 
     public Optional<Organ> getFirstOrgansByState(Player iPlayer, State... state) {
         List<Organ> organsByState = getOrgansByState(iPlayer, state);
-
         return organsByState == null || organsByState.isEmpty() ? Optional.empty()
                         : Optional.of(organsByState.get(0));
     }
 
     public Stream<StrategyResp> canUseOrgan(Rank currentRank, Collection<Card> cards) {
-        return cards.stream().map(organ -> {
-            return canUseOrganCard(currentRank, organ);
-        });
+        return cards.stream().map(card -> {
+            return canUseOrganCard(currentRank, card);
+        }).filter(Objects::nonNull);
     }
 
     public Stream<StrategyResp> canUseMedForInfected(Rank currentRank, Collection<Card> cards) {
         return cards.stream().map(card -> {
-            return canUseCardForInfected(currentRank, card);
-        });
+            return checkIfCardCanBeUsed(currentRank, card, State.SICK);
+        }).filter(Objects::nonNull);
     }
 
-    public Stream<StrategyResp> canUseMedForHealthy(Rank currentRank, Collection<Card> cards) {
+    public Stream<StrategyResp> checkIfMedCanBeUsedForHealthy(Rank currentRank, Collection<Card> cards) {
         return cards.stream().map(card -> {
-            return canUseCardForHealthy(currentRank, card);
-        });
+            return checkIfCardCanBeUsed(currentRank, card, State.HEALTH, State.VACCINATED);
+        }).filter(Objects::nonNull);
     }
 
-    public Stream<StrategyResp> virusToUse(Stream<Rank> rivalsRanks, Collection<Card> viruses) {
+    public Stream<StrategyResp> checkIfVirusCanBeUsed(TreeSet<Rank> rivalsRanks, Collection<Card> viruses) {
         return viruses.stream().flatMap(virus -> {
-            return virusToUse(rivalsRanks, virus);
+            return checkIfVirusCanBeUsed(rivalsRanks, virus);
         });
     }
 
@@ -87,20 +87,15 @@ public class MyVirusUtil {
         return asList.get(RANDOM.nextInt(asList.size()));
     }
 
-    private Stream<StrategyResp> virusToUse(Stream<Rank> rivalsRanks, Card virus) {
-        return rivalsRanks.map(rank -> {
-            return this.canUseCardForHealthy(rank, virus);
+    private Stream<StrategyResp> checkIfVirusCanBeUsed(TreeSet<Rank> rivalsRanks, Card virus) {
+        return rivalsRanks.stream().map(rank -> {
+            return this.checkIfCardCanBeUsed(rank, virus, State.HEALTH, State.VACCINATED, State.SICK);
         }).filter(Objects::nonNull);
     }
 
-    private StrategyResp canUseCardForHealthy(Rank targetRank, Card virusOrMedicine) {
-        List<Organ> healthyOrgans = targetRank.getOrgansByStates(State.HEALTH, State.VACCINATED);
+    private StrategyResp checkIfCardCanBeUsed(Rank targetRank, Card virusOrMedicine, State... states) {
+        List<Organ> healthyOrgans = targetRank.getOrgansByStates(states);
         return canUseCardInOrganList(targetRank, virusOrMedicine, healthyOrgans);
-    }
-
-    private StrategyResp canUseCardForInfected(Rank targetRank, Card virusOrMedicine) {
-        List<Organ> infectedOrgans = targetRank.getOrgansByStates(State.SICK);
-        return canUseCardInOrganList(targetRank, virusOrMedicine, infectedOrgans);
     }
 
     private StrategyResp canUseCardInOrganList(Rank targetRank, Card card,

@@ -13,4 +13,9 @@ public abstract class VirusCard implements SingleOrganCardType<MultiVirusCard>{
     public MultiVirusCard getMultiOrganCardType(){
         return multiVirusCard;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Virus: %s", this.getOrgan());
+    }
 }

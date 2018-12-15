@@ -13,4 +13,9 @@ public class MultiMedicineCard implements OrganCardType{
     public void playCard(Player currentPlayer, Organ organ){
         currentPlayer.vacuneOrgan(organ);
     }
+
+    @Override
+    public String toString() {
+        return "MultiMedicine";
+    }
 }

@@ -10,52 +10,31 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import com.mfra.myvirus.model.SingleOrganCardType;
 import com.mfra.myvirus.model.OrganCardType;
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.function.Supplier;
+import org.springframework.stereotype.Component;
 
 /**
  *
  */
+@Component
 public class CommonStrategy implements Strategy {
 
     @Override
     public List<Card> play(Player currentPlayer, List<Player> rivals) {
+
         Hand.UnmodifiableHandCard handCards = currentPlayer.getHandCards();
-        Rank currentRank = new Rank(currentPlayer);
-        Stream<Rank> rivalsRanks = rivals.stream().map(Rank::new);
-        TreeSet<StrategyResp> virusToUse = new TreeSet(MyVirusUtil.getInstance()
-                        .virusToUse(rivalsRanks, handCards.getVirus())
-                        .collect(Collectors.toList()));
-        Optional<Card> resp = testForTreatments(currentRank, rivalsRanks, handCards);
-        if (resp.isPresent()) {
-            return Collections.singletonList(resp.get());
-        }
+        List<Supplier<Card>> checkers = fillChecker(handCards, currentPlayer, rivals);
 
-        resp = testForVirusIfWorth(virusToUse, currentRank);
-        if (resp.isPresent()) {
-            return Collections.singletonList(resp.get());
-        }
-
-        resp = testForOrgan(currentRank, handCards);
-        if (resp.isPresent()) {
-            return Collections.singletonList(resp.get());
-        }
-
-        resp = testMedForInfected(currentRank, handCards);
-        if (resp.isPresent()) {
-            return Collections.singletonList(resp.get());
-        }
-
-        resp = runOrganTypeCard(virusToUse);
-        if (resp.isPresent()) {
-            return Collections.singletonList(resp.get());
-        }
-
-        resp = testMedForHealthy(currentRank, handCards);
-        if (resp.isPresent()) {
-            return Collections.singletonList(resp.get());
+        Optional<Card> findFirst = checkers.stream()
+                        .map(Supplier::get)
+                        .filter(Objects::nonNull)
+                        .findFirst();
+        if (findFirst.isPresent()) {
+            return Collections.singletonList(findFirst.get());
         }
 
         if (!handCards.getOrgans().isEmpty()) {
@@ -73,80 +52,107 @@ public class CommonStrategy implements Strategy {
         throw new IllegalStateException("There aren't cards to play or discard");
     }
 
-    private Optional<Card> testForTreatments(Rank currentRank,
-                    Stream<Rank> rivalsRanks,
+    private List<Supplier<Card>> fillChecker(Hand.UnmodifiableHandCard handCards,
+                    Player currentPlayer, List<Player> rivals) {
+        Rank currentRank = new Rank(currentPlayer);
+        TreeSet<Rank> rivalsRanks = rivals.stream().map(Rank::new).collect(Collectors.toCollection(TreeSet::new));
+        TreeSet<StrategyResp> virusToUse = MyVirusUtil.getInstance()
+                        .checkIfVirusCanBeUsed(rivalsRanks, handCards.getVirus())
+                        .collect(Collectors.toCollection(TreeSet::new));
+
+        List<Supplier<Card>> checkers = new ArrayList<>();
+        checkers.add((Supplier<Card>) () -> {
+            return testForTreatments(currentRank, rivalsRanks, handCards);
+        });
+        checkers.add((Supplier<Card>) () -> {
+            return testForVirusIfWorth(virusToUse, currentRank);
+        });
+        checkers.add((Supplier<Card>) () -> {
+            return testForOrgan(currentRank, handCards);
+        });
+        checkers.add((Supplier<Card>) () -> {
+            return testMedForInfected(currentRank, handCards);
+        });
+        checkers.add((Supplier<Card>) () -> {
+            return runOrganTypeCard(virusToUse);
+        });
+        checkers.add((Supplier<Card>) () -> {
+            return testMedForHealthy(currentRank, handCards);
+        });
+        return checkers;
+    }
+
+    private Card testForTreatments(Rank currentRank,
+                    TreeSet<Rank> rivalsRanks,
                     Hand.UnmodifiableHandCard handCards) {
         Collection<Card> treatments = handCards.getTreatments();
         for (Card treatment : treatments) {
             StrategyManager strategyManager = TreatmentStrategyFactory.getInstance().getStrategyManager(treatment);
-            Optional<Card> evaluate = strategyManager.evaluate(treatment, currentRank, rivalsRanks);
-            if (evaluate.isPresent()) {
-                return evaluate;
-            }
-
+            return strategyManager.evaluate(treatment, currentRank, rivalsRanks);
         }
-        return Optional.empty();
+        return null;
     }
 
-    private Optional<Card> testMedForInfected(Rank currentRank, Hand.UnmodifiableHandCard handCards) {
+    private Card testMedForInfected(Rank currentRank, Hand.UnmodifiableHandCard handCards) {
         TreeSet<StrategyResp> canUseMedForInfected = new TreeSet(MyVirusUtil.getInstance()
                         .canUseMedForInfected(currentRank, handCards.getMedicines())
                         .collect(Collectors.toList()));
         if (!canUseMedForInfected.isEmpty()) {
             return runOrganTypeCard(canUseMedForInfected);
         }
-        return Optional.empty();
+        return null;
     }
 
-    private Optional<Card> testMedForHealthy(Rank currentRank, Hand.UnmodifiableHandCard handCards) {
+    private Card testMedForHealthy(Rank currentRank, Hand.UnmodifiableHandCard handCards) {
         TreeSet<StrategyResp> canUseMedForHealthy = new TreeSet(MyVirusUtil.getInstance()
-                        .canUseMedForHealthy(currentRank, handCards.getMedicines())
+                        .checkIfMedCanBeUsedForHealthy(currentRank, handCards.getMedicines())
                         .collect(Collectors.toList()));
         if (!canUseMedForHealthy.isEmpty()) {
             return runOrganTypeCard(canUseMedForHealthy);
         }
-        return Optional.empty();
+        return null;
     }
 
-    private Optional<Card> testForOrgan(Rank currentRank, Hand.UnmodifiableHandCard handCards) {
+    private Card testForOrgan(Rank currentRank, Hand.UnmodifiableHandCard handCards) {
         TreeSet<StrategyResp> canUseOrgan = new TreeSet(MyVirusUtil.getInstance()
                         .canUseOrgan(currentRank, handCards.getOrgans())
                         .collect(Collectors.toList()));
         if (!canUseOrgan.isEmpty()) {
             return runOrganTypeCard(canUseOrgan);
         }
-        return Optional.empty();
+        return null;
     }
 
-    private Optional<Card> testForVirusIfWorth(TreeSet<StrategyResp> canUseVirus,
+    private Card testForVirusIfWorth(TreeSet<StrategyResp> virusToUse,
                     Rank currentRank) {
-        if (!canUseVirus.isEmpty()) {
-            StrategyResp singleStrategyResp = canUseVirus.last();
+        if (!virusToUse.isEmpty()) {
+            StrategyResp singleStrategyResp = virusToUse.last();
             Rank target = singleStrategyResp.getTarget();
             if (target.getScore() > currentRank.getScore()) {
                 return runOrganTypeCard(singleStrategyResp, target);
             }
         }
-        return Optional.empty();
+        return null;
     }
 
-    private Optional<Card> runOrganTypeCard(TreeSet<StrategyResp> strategyResps) {
+    private Card runOrganTypeCard(TreeSet<StrategyResp> strategyResps) {
         if (!strategyResps.isEmpty()) {
             StrategyResp singleStrategyResp = strategyResps.last();
             return runOrganTypeCard(singleStrategyResp, singleStrategyResp.getTarget());
         }
-        return Optional.empty();
+        return null;
     }
 
-    private Optional<Card> runOrganTypeCard(StrategyResp singleStrategyResp, Rank target) {
+    private Card runOrganTypeCard(StrategyResp singleStrategyResp, Rank target) {
         Card card = singleStrategyResp.getCard();
+
         if (card instanceof SingleOrganCardType) {
             ((SingleOrganCardType) card).playCard((Player) target.getPlayer());
-            return Optional.of(card);
+            return card;
         }
         ((OrganCardType) card).playCard((Player) target.getPlayer(),
                         singleStrategyResp.getTargetOrgan());
-        return Optional.of(card);
+        return card;
 
     }
 
