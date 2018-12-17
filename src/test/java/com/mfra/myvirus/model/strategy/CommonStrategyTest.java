@@ -7,7 +7,6 @@ import com.mfra.myvirus.model.State;
 import com.mfra.myvirus.model.cards.CardFactory;
 import com.mfra.myvirus.model.cards.MultiOrganCard;
 import com.mfra.myvirus.model.cards.MultiVirusCard;
-import com.mfra.myvirus.model.cards.VirusCard;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
@@ -46,7 +45,7 @@ public class CommonStrategyTest {
         players.add(player4);
         player1.addCard(CardFactory.getInstance().getOrganCard(Organ.BRAIN));
         player1.addCard(CardFactory.getInstance().getMedicineCard(Organ.BONE));
-        player1.addCard(CardFactory.getInstance().getMedicineCard(Organ.BONE));
+        player1.addCard(CardFactory.getInstance().getMedicineCard(Organ.HEART));
         
         player2.addCard(CardFactory.getInstance().getVirusCard(Organ.BRAIN));
         player2.addCard(CardFactory.getInstance().getVirusCard(Organ.BRAIN));
@@ -108,7 +107,7 @@ public class CommonStrategyTest {
         Assert.assertEquals(2, new Rank(player1).getOrgansByStates(State.values()).size());
         Assert.assertEquals(1, new Rank(player1).getOrgansByStates(State.HEALTH).size());
         Assert.assertEquals(1, new Rank(player1).getOrgansByStates(State.SICK).size());
-        player1.addCard(CardFactory.getInstance().getMedicineCard(Organ.BONE));
+        player1.addCard(CardFactory.getInstance().getMedicineCard(Organ.HEART));
         
         player2.play();
         Assert.assertEquals(2, player2.getHandCards().getTotalCards());
@@ -131,7 +130,7 @@ public class CommonStrategyTest {
         Assert.assertEquals(2, player1.getHandCards().getMedicines().size());
         Assert.assertEquals(1, new Rank(player1).getOrgansByStates(State.values()).size());
         Assert.assertEquals(1, new Rank(player1).getOrgansByStates(State.VACCINATED).size());
-        player1.addCard(CardFactory.getInstance().getMedicineCard(Organ.BONE));
+        player1.addCard(new MultiOrganCard());
         
         player2.play();
         Assert.assertEquals(2, player2.getHandCards().getTotalCards());
@@ -140,14 +139,29 @@ public class CommonStrategyTest {
         Assert.assertEquals(1, new Rank(player1).getOrgansByStates(State.HEALTH).size());
         player2.addCard(CardFactory.getInstance().getVirusCard(Organ.BONE));
         
-//        player3.play();
-//        Assert.assertEquals(2, player3.getHandCards().getTotalCards());
-//        Assert.assertEquals(1, player3.getHandCards().getVirus().size());
-//        Assert.assertEquals(1, player3.getHandCards().getMedicines().size());
-//        Assert.assertEquals(1, new Rank(player3).getOrgansByStates(State.IMMUNE).size());
-//        Assert.assertEquals(0, new Rank(player1).getOrgansByStates(State.values()).size());
-//        player3.addCard(new MultiVirusCard());
+        player3.play();
+        Assert.assertEquals(2, player3.getHandCards().getTotalCards());
+        Assert.assertEquals(1, player3.getHandCards().getVirus().size());
+        Assert.assertEquals(1, player3.getHandCards().getMedicines().size());
+        Assert.assertEquals(1, new Rank(player3).getOrgansByStates(State.IMMUNE).size());
+        Assert.assertEquals(1, new Rank(player1).getOrgansByStates(State.values()).size());
+        player3.addCard(new MultiVirusCard());
         
+        player1.play();
+        Assert.assertEquals(2, player1.getHandCards().getTotalCards());
+        Assert.assertEquals(2, player1.getHandCards().getMedicines().size());
+        Assert.assertEquals(2, new Rank(player1).getOrgansByStates(State.values()).size());
+        Assert.assertEquals(0, new Rank(player1).getOrgansByStates(State.VACCINATED).size());
+        Assert.assertEquals(1, new Rank(player1).getOrgansByStates(State.SICK).size());
+        Assert.assertEquals(1, new Rank(player1).getOrgansByStates(State.HEALTH).size());
+        player1.addCard(CardFactory.getInstance().getOrganCard(Organ.STOMACH));
+        
+        player2.play();
+        Assert.assertEquals(2, player2.getHandCards().getTotalCards());
+        Assert.assertEquals(2, player2.getHandCards().getVirus().size());
+        Assert.assertEquals(0, new Rank(player2).getOrgansByStates(State.values()).size());
+        Assert.assertEquals(1, new Rank(player1).getOrgansByStates(State.HEALTH).size());
+        player2.addCard(new MultiVirusCard());
         
         System.out.println("player1: "+player1.getBodyClon());
         System.out.println("player1: "+player1.getHandCards());

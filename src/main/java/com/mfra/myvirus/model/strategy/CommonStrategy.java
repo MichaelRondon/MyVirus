@@ -68,10 +68,10 @@ public class CommonStrategy implements Strategy {
             return testForVirusIfWorth(virusToUse, currentRank);
         });
         checkers.add((Supplier<Card>) () -> {
-            return testForOrgan(currentRank, handCards);
+            return testMedForInfected(currentRank, handCards);
         });
         checkers.add((Supplier<Card>) () -> {
-            return testMedForInfected(currentRank, handCards);
+            return testForOrgan(currentRank, handCards);
         });
         checkers.add((Supplier<Card>) () -> {
             return runOrganTypeCard(virusToUse);
@@ -145,7 +145,6 @@ public class CommonStrategy implements Strategy {
 
     private Card runOrganTypeCard(StrategyResp singleStrategyResp, Rank target) {
         Card card = singleStrategyResp.getCard();
-
         if (card instanceof SingleOrganCardType) {
             ((SingleOrganCardType) card).playCard((Player) target.getPlayer());
             return card;

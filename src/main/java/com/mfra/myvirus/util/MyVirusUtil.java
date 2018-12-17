@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import com.mfra.myvirus.model.SingleOrganCardType;
 import java.util.TreeSet;
+import com.mfra.myvirus.model.cards.MultiTypeCard;
+import java.util.ArrayList;
 
 /**
  *
@@ -82,7 +84,7 @@ public class MyVirusUtil {
     }
 
     private Organ getRandomOrganWithout(List<Organ> allOrgans) {
-        List<Organ> asList = Arrays.asList(Organ.values());
+        List<Organ> asList = new ArrayList<>(Arrays.asList(Organ.values()));
         asList.removeAll(allOrgans);
         return asList.get(RANDOM.nextInt(asList.size()));
     }
@@ -108,7 +110,7 @@ public class MyVirusUtil {
                 return strategyResp;
             }
         }
-        if (card instanceof MultiOrganCard) {
+        if (card instanceof MultiTypeCard) {
             if (!list.isEmpty()) {
                 StrategyResp strategyResp = new StrategyResp(card, targetRank);
                 strategyResp.setTargetOrgan(list.get(0));

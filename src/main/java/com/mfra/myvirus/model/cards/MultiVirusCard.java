@@ -7,7 +7,7 @@ import com.mfra.myvirus.model.OrganCardType;
 /**
  *
  */
-public class MultiVirusCard implements OrganCardType{
+public class MultiVirusCard implements OrganCardType, MultiTypeCard{
 
     @Override
     public void playCard(Player targetPlayer, Organ organ){
